@@ -2,7 +2,7 @@
 
 Native Magento 2 only supports one shipping flat rate which can lead to difficulty for stores in defining the best price for delivering products to customers in different countries.  
 
-Multiple flat rate shipping is a must have for many online stores, especially international brands which deliver their products worldwide. Offering buyers different flat rates to select makes shopping easier and convenient for customers. Besides, this also helps stores manage shipping methods better.
+**Multiple flat rate shipping** is a must have for many online stores, especially international brands which deliver their products worldwide. Offering buyers different flat rates to select makes shopping easier and convenient for customers. Besides, this also helps stores manage shipping methods better.
 
 ## 1. Documentation
 
@@ -32,7 +32,7 @@ php bin/magento setup:static-content:deploy
 
 ### 5 multiple flat rate shipping
 
-Mageplaza Multi flat rate shipping extension allows store admins to add up to 5 other shipping rates. Admins are free to give a shipping flat rate a name and/or a title to help buyers distinguish it with others on Cart page and Checkout page. 
+**Mageplaza Multi flat rate shipping extension** allows store admins to add up to 5 other shipping rates. Admins are free to give a shipping flat rate a name and/or a title to help buyers distinguish it with others on Cart page and Checkout page. 
 
 Each flat rate can be turned on/off easily on the backend. A set of configuration options for price, sort order, applicable countries, and error message are also ready to be selected.
 
