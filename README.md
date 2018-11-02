@@ -1,4 +1,4 @@
-# Magento 2 Multi Flat Rates extension
+# Magento 2 Multiple Flat Rates extension by Mageplaza
 
 Native Magento 2 only supports one shipping flat rate which can lead to difficulty for stores in defining the best price for delivering products to customers in different countries.  
 
