@@ -27,10 +27,13 @@ use Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory;
 use Magento\Quote\Model\Quote\Address\RateResult\MethodFactory;
 use Magento\Shipping\Model\Carrier\CarrierInterface;
 use Magento\Shipping\Model\Rate\ResultFactory;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
  * Class AbstractCarrier
+ *
  * @package Mageplaza\Multiflatrates\Model\Carrier
  */
 class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements CarrierInterface
@@ -51,12 +54,25 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     protected $_rateMethodFactory;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var \Magento\Framework\App\RequestInterface
+     */
+    private $request;
+
+    /**
      * AbstractCarrier constructor.
+     *
      * @param ScopeConfigInterface $scopeConfig
      * @param ErrorFactory $rateErrorFactory
      * @param LoggerInterface $logger
      * @param ResultFactory $rateResultFactory
      * @param MethodFactory $rateMethodFactory
+     * @param StoreManagerInterface $storeManager
+     * @param \Magento\Framework\App\RequestInterface $request
      * @param array $data
      */
     public function __construct(
@@ -65,11 +81,15 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         LoggerInterface $logger,
         ResultFactory $rateResultFactory,
         MethodFactory $rateMethodFactory,
+        StoreManagerInterface $storeManager,
+        \Magento\Framework\App\RequestInterface $request,
         array $data = []
     )
     {
         $this->_rateResultFactory = $rateResultFactory;
         $this->_rateMethodFactory = $rateMethodFactory;
+        $this->storeManager       = $storeManager;
+        $this->request            = $request;
 
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
@@ -79,6 +99,8 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
      */
     public function collectRates(RateRequest $request)
     {
+        $this->setStore($this->getScopeId());
+
         if (!$this->getConfigFlag('active')) {
             return false;
         }
@@ -117,5 +139,20 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     public function getAllowedMethods()
     {
         return ['flatrate' => $this->getConfigData('name')];
+    }
+
+    /**
+     * @return int
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    protected function getScopeId()
+    {
+        $scope = $this->request->getParam(ScopeInterface::SCOPE_STORE) ?: $this->storeManager->getStore()->getId();
+
+        if ($website = $this->request->getParam(ScopeInterface::SCOPE_WEBSITE)) {
+            $scope = $this->storeManager->getWebsite($website)->getDefaultStore()->getId();
+        }
+
+        return $scope;
     }
 }
