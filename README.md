@@ -4,6 +4,10 @@ Native Magento 2 only supports one shipping flat rate which can lead to difficul
 
 [Multiple flat rate shipping](https://www.mageplaza.com/magento-2-multi-flat-rates/) is a must have for many online stores, especially international brands which deliver their products worldwide. Offering buyers different flat rates to select makes shopping easier and convenient for customers. Besides, this also helps stores manage shipping methods better.
 
+[![Latest Stable Version](https://poser.pugx.org/mageplaza/module-multi-flat-rates/v/stable)](https://packagist.org/packages/mageplaza/module-multi-flat-rates)
+[![Total Downloads](https://poser.pugx.org/mageplaza/module-multi-flat-rates/downloads)](https://packagist.org/packages/mageplaza/module-multi-flat-rates)
+
+
 ## 1. Documentation
 
 - [Installation guide](https://www.mageplaza.com/install-magento-2-extension/)
