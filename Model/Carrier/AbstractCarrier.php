@@ -29,11 +29,13 @@ use Magento\Shipping\Model\Carrier\CarrierInterface;
 use Magento\Shipping\Model\Rate\ResultFactory;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Backend\Model\Session\Quote;
 use Psr\Log\LoggerInterface;
+use Magento\Framework\App\State;
+use Magento\Framework\App\Area;
 
 /**
  * Class AbstractCarrier
- *
  * @package Mageplaza\Multiflatrates\Model\Carrier
  */
 class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier implements CarrierInterface
@@ -64,8 +66,17 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     private $request;
 
     /**
+     * @var \Magento\Backend\Model\Session\Quote
+     */
+    protected $quote;
+
+    /**
+     *  Magento\Framework\App\State
+     */
+    protected $state;
+
+    /**
      * AbstractCarrier constructor.
-     *
      * @param ScopeConfigInterface $scopeConfig
      * @param ErrorFactory $rateErrorFactory
      * @param LoggerInterface $logger
@@ -83,6 +94,8 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         MethodFactory $rateMethodFactory,
         StoreManagerInterface $storeManager,
         \Magento\Framework\App\RequestInterface $request,
+        Quote $quote,
+        State $state,
         array $data = []
     )
     {
@@ -90,6 +103,8 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         $this->_rateMethodFactory = $rateMethodFactory;
         $this->storeManager       = $storeManager;
         $this->request            = $request;
+        $this->quote              = $quote;
+        $this->state              = $state;
 
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
@@ -103,6 +118,13 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
 
         if (!$this->getConfigFlag('active')) {
             return false;
+        }
+
+        if($this->getConfigFlag('postcode')){
+            $zipcodes = explode(';',$this->getConfigData('postcode'));
+            if(!in_array($request->getDestPostcode(), $zipcodes)){
+                return false;
+            }
         }
 
         $shippingPrice = $this->getConfigData('price');
@@ -140,19 +162,23 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     {
         return ['flatrate' => $this->getConfigData('name')];
     }
-
     /**
      * @return int
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function getScopeId()
     {
-        $scope = $this->request->getParam(ScopeInterface::SCOPE_STORE) ?: $this->storeManager->getStore()->getId();
+        if($this->state->getAreaCode() == Area::AREA_ADMINHTML){
+            $storeId = $this->quote->getStoreId();
+        }
+        else{
+            $storeId = $this->storeManager->getStore()->getId();
+        }
 
+        $scope = $this->request->getParam(ScopeInterface::SCOPE_STORE) ?: $storeId;
         if ($website = $this->request->getParam(ScopeInterface::SCOPE_WEBSITE)) {
             $scope = $this->storeManager->getWebsite($website)->getDefaultStore()->getId();
         }
-
         return $scope;
     }
 }
