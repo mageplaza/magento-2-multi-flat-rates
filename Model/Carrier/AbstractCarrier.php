@@ -137,7 +137,7 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
             $method->setCarrier($this->_code);
             $method->setCarrierTitle($this->getConfigData('title'));
 
-            $method->setMethod($this->_code);
+            $method->setMethod('flatrate');
             $method->setMethodTitle($this->getConfigData('name'));
 
             if ($request->getFreeShipping() === true || $request->getPackageQty() == $this->getFreeBoxes()) {
