@@ -21,7 +21,12 @@
 
 namespace Mageplaza\Multiflatrates\Model\Carrier;
 
+use Magento\Backend\Model\Session\Quote;
+use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\State;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote\Address\RateRequest;
 use Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory;
 use Magento\Quote\Model\Quote\Address\RateResult\MethodFactory;
@@ -29,10 +34,7 @@ use Magento\Shipping\Model\Carrier\CarrierInterface;
 use Magento\Shipping\Model\Rate\ResultFactory;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use Magento\Backend\Model\Session\Quote;
 use Psr\Log\LoggerInterface;
-use Magento\Framework\App\State;
-use Magento\Framework\App\Area;
 
 /**
  * Class AbstractCarrier
@@ -61,12 +63,12 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     protected $storeManager;
 
     /**
-     * @var \Magento\Framework\App\RequestInterface
+     * @var RequestInterface
      */
     private $request;
 
     /**
-     * @var \Magento\Backend\Model\Session\Quote
+     * @var Quote
      */
     protected $quote;
 
@@ -77,13 +79,16 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
 
     /**
      * AbstractCarrier constructor.
+     *
      * @param ScopeConfigInterface $scopeConfig
      * @param ErrorFactory $rateErrorFactory
      * @param LoggerInterface $logger
      * @param ResultFactory $rateResultFactory
      * @param MethodFactory $rateMethodFactory
      * @param StoreManagerInterface $storeManager
-     * @param \Magento\Framework\App\RequestInterface $request
+     * @param RequestInterface $request
+     * @param Quote $quote
+     * @param State $state
      * @param array $data
      */
     public function __construct(
@@ -93,12 +98,11 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         ResultFactory $rateResultFactory,
         MethodFactory $rateMethodFactory,
         StoreManagerInterface $storeManager,
-        \Magento\Framework\App\RequestInterface $request,
+        RequestInterface $request,
         Quote $quote,
         State $state,
         array $data = []
-    )
-    {
+    ) {
         $this->_rateResultFactory = $rateResultFactory;
         $this->_rateMethodFactory = $rateMethodFactory;
         $this->storeManager       = $storeManager;
@@ -120,9 +124,9 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
             return false;
         }
 
-        if($this->getConfigFlag('postcode')){
-            $zipcodes = explode(';',$this->getConfigData('postcode'));
-            if(!in_array($request->getDestPostcode(), $zipcodes)){
+        if ($this->getConfigFlag('postcode')) {
+            $zipcodes = explode(';', $this->getConfigData('postcode'));
+            if (!in_array($request->getDestPostcode(), $zipcodes)) {
                 return false;
             }
         }
@@ -162,16 +166,16 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     {
         return ['flatrate' => $this->getConfigData('name')];
     }
+
     /**
      * @return int
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @throws LocalizedException
      */
     protected function getScopeId()
     {
-        if($this->state->getAreaCode() == Area::AREA_ADMINHTML){
+        if ($this->state->getAreaCode() === Area::AREA_ADMINHTML) {
             $storeId = $this->quote->getStoreId();
-        }
-        else{
+        } else {
             $storeId = $this->storeManager->getStore()->getId();
         }
 
@@ -179,6 +183,7 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         if ($website = $this->request->getParam(ScopeInterface::SCOPE_WEBSITE)) {
             $scope = $this->storeManager->getWebsite($website)->getDefaultStore()->getId();
         }
+
         return $scope;
     }
 }
