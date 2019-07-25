@@ -105,10 +105,10 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     ) {
         $this->_rateResultFactory = $rateResultFactory;
         $this->_rateMethodFactory = $rateMethodFactory;
-        $this->storeManager       = $storeManager;
-        $this->request            = $request;
-        $this->quote              = $quote;
-        $this->state              = $state;
+        $this->storeManager = $storeManager;
+        $this->request = $request;
+        $this->quote = $quote;
+        $this->state = $state;
 
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
@@ -119,22 +119,20 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     public function collectRates(RateRequest $request)
     {
         $this->setStore($this->getScopeId());
-
         if (!$this->getConfigFlag('active')) {
             return false;
         }
 
-        if ($this->getConfigFlag('postcode')) {
-            $zipcodes = explode(';', $this->getConfigData('postcode'));
+        if ($postCode = $this->getConfigFlag('postcode')) {
+            $zipcodes = explode(';', $postCode);
             if (!in_array($request->getDestPostcode(), $zipcodes)) {
                 return false;
             }
         }
 
-        $shippingPrice = $this->getConfigData('price');
-
         $result = $this->_rateResultFactory->create();
 
+        $shippingPrice = $this->getConfigData('price');
         if ($shippingPrice !== false) {
             $method = $this->_rateMethodFactory->create();
 

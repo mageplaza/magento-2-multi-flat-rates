@@ -3,7 +3,7 @@
 - Product Page: https://www.mageplaza.com/magento-2-multi-flat-rates/
 - Get Support: https://github.com/mageplaza/magento-2-multi-flat-rates/issues
 - Contribute on Github: https://github.com/mageplaza/magento-2-multi-flat-rates
-- Changelog: https://www.mageplaza.com/changelog/m2-multi-flat-rates.txt
+- Changelog: https://www.mageplaza.com/releases/multi-flat-rates
 
 ## 2. How to install
 
