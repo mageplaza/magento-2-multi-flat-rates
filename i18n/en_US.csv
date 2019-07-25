@@ -6,6 +6,7 @@ Price,Price
 Title,Title
 "Ship to Applicable Countries","Ship to Applicable Countries"
 "Ship to Specific Countries","Ship to Specific Countries"
+"Ship to Specific Zipcodes","Ship to Specific Zipcodes"
 "Show Method if Not Applicable","Show Method if Not Applicable"
 "Displayed Error Message","Displayed Error Message"
 "Flat Rate #2","Flat Rate #2"
