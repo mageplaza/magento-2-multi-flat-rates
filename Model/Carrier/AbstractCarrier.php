@@ -21,12 +21,19 @@
 
 namespace Mageplaza\Multiflatrates\Model\Carrier;
 
+use Magento\Backend\Model\Session\Quote;
+use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\State;
+use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote\Address\RateRequest;
 use Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory;
 use Magento\Quote\Model\Quote\Address\RateResult\MethodFactory;
 use Magento\Shipping\Model\Carrier\CarrierInterface;
 use Magento\Shipping\Model\Rate\ResultFactory;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -51,12 +58,37 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     protected $_rateMethodFactory;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * @var RequestInterface
+     */
+    private $request;
+
+    /**
+     * @var Quote
+     */
+    protected $quote;
+
+    /**
+     *  Magento\Framework\App\State
+     */
+    protected $state;
+
+    /**
      * AbstractCarrier constructor.
+     *
      * @param ScopeConfigInterface $scopeConfig
      * @param ErrorFactory $rateErrorFactory
      * @param LoggerInterface $logger
      * @param ResultFactory $rateResultFactory
      * @param MethodFactory $rateMethodFactory
+     * @param StoreManagerInterface $storeManager
+     * @param RequestInterface $request
+     * @param Quote $quote
+     * @param State $state
      * @param array $data
      */
     public function __construct(
@@ -65,11 +97,18 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         LoggerInterface $logger,
         ResultFactory $rateResultFactory,
         MethodFactory $rateMethodFactory,
+        StoreManagerInterface $storeManager,
+        RequestInterface $request,
+        Quote $quote,
+        State $state,
         array $data = []
-    )
-    {
+    ) {
         $this->_rateResultFactory = $rateResultFactory;
         $this->_rateMethodFactory = $rateMethodFactory;
+        $this->storeManager = $storeManager;
+        $this->request = $request;
+        $this->quote = $quote;
+        $this->state = $state;
 
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
@@ -79,21 +118,28 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
      */
     public function collectRates(RateRequest $request)
     {
+        $this->setStore($this->getScopeId());
         if (!$this->getConfigFlag('active')) {
             return false;
         }
 
-        $shippingPrice = $this->getConfigData('price');
+        if ($postCode = $this->getConfigFlag('postcode')) {
+            $zipcodes = explode(';', $postCode);
+            if (!in_array($request->getDestPostcode(), $zipcodes)) {
+                return false;
+            }
+        }
 
         $result = $this->_rateResultFactory->create();
 
+        $shippingPrice = $this->getConfigData('price');
         if ($shippingPrice !== false) {
             $method = $this->_rateMethodFactory->create();
 
             $method->setCarrier($this->_code);
             $method->setCarrierTitle($this->getConfigData('title'));
 
-            $method->setMethod($this->_code);
+            $method->setMethod('flatrate');
             $method->setMethodTitle($this->getConfigData('name'));
 
             if ($request->getFreeShipping() === true || $request->getPackageQty() == $this->getFreeBoxes()) {
@@ -117,5 +163,25 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     public function getAllowedMethods()
     {
         return ['flatrate' => $this->getConfigData('name')];
+    }
+
+    /**
+     * @return int
+     * @throws LocalizedException
+     */
+    protected function getScopeId()
+    {
+        if ($this->state->getAreaCode() === Area::AREA_ADMINHTML) {
+            $storeId = $this->quote->getStoreId();
+        } else {
+            $storeId = $this->storeManager->getStore()->getId();
+        }
+
+        $scope = $this->request->getParam(ScopeInterface::SCOPE_STORE) ?: $storeId;
+        if ($website = $this->request->getParam(ScopeInterface::SCOPE_WEBSITE)) {
+            $scope = $this->storeManager->getWebsite($website)->getDefaultStore()->getId();
+        }
+
+        return $scope;
     }
 }
