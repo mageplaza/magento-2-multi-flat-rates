@@ -33,6 +33,7 @@ use Magento\Quote\Model\Quote\Address\RateResult\MethodFactory;
 use Magento\Shipping\Model\Carrier\CarrierInterface;
 use Magento\Shipping\Model\Rate\ResultFactory;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -105,10 +106,10 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     ) {
         $this->_rateResultFactory = $rateResultFactory;
         $this->_rateMethodFactory = $rateMethodFactory;
-        $this->storeManager = $storeManager;
-        $this->request = $request;
-        $this->quote = $quote;
-        $this->state = $state;
+        $this->storeManager       = $storeManager;
+        $this->request            = $request;
+        $this->quote              = $quote;
+        $this->state              = $state;
 
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
@@ -118,14 +119,27 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
      */
     public function collectRates(RateRequest $request)
     {
-        $this->setStore($this->getScopeId());
+        try {
+            $this->setData('store', $this->getScopeId());
+        } catch (LocalizedException $e) {
+            if (!$this->getConfigData('showmethod')) {
+                return false;
+            }
+
+            return $this->_rateErrorFactory->create()->setData([
+                'carrier'       => $this->_code,
+                'carrier_title' => $this->getConfigData('title'),
+                'error_message' => $e->getMessage(),
+            ]);
+        }
+
         if (!$this->getConfigFlag('active')) {
             return false;
         }
 
         if ($postCode = $this->getConfigFlag('postcode')) {
-            $zipcodes = explode(';', $postCode);
-            if (!in_array($request->getDestPostcode(), $zipcodes)) {
+            $zipCodes = explode(';', $postCode);
+            if (!in_array($request->getDestPostcode(), $zipCodes, true)) {
                 return false;
             }
         }
@@ -133,26 +147,25 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         $result = $this->_rateResultFactory->create();
 
         $shippingPrice = $this->getConfigData('price');
-        if ($shippingPrice !== false) {
-            $method = $this->_rateMethodFactory->create();
 
-            $method->setCarrier($this->_code);
-            $method->setCarrierTitle($this->getConfigData('title'));
-
-            $method->setMethod('flatrate');
-            $method->setMethodTitle($this->getConfigData('name'));
-
-            if ($request->getFreeShipping() === true || $request->getPackageQty() == $this->getFreeBoxes()) {
-                $shippingPrice = '0.00';
-            }
-
-            $method->setPrice($shippingPrice);
-            $method->setCost($shippingPrice);
-
-            $result->append($method);
+        if ($shippingPrice === false) {
+            return $result;
         }
 
-        return $result;
+        if ($request->getFreeShipping()) {
+            $shippingPrice = '0.00';
+        }
+
+        $method = $this->_rateMethodFactory->create()->setData([
+            'carrier'       => $this->_code,
+            'carrier_title' => $this->getConfigData('title'),
+            'method'        => 'flatrate',
+            'method_title'  => $this->getConfigData('name'),
+            'price'         => $shippingPrice,
+            'cost'          => $shippingPrice,
+        ]);
+
+        return $result->append($method);
     }
 
     /**
@@ -179,7 +192,11 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
 
         $scope = $this->request->getParam(ScopeInterface::SCOPE_STORE) ?: $storeId;
         if ($website = $this->request->getParam(ScopeInterface::SCOPE_WEBSITE)) {
-            $scope = $this->storeManager->getWebsite($website)->getDefaultStore()->getId();
+            /** @var Store $store */
+            $store = $this->storeManager->getWebsite($website)->getDefaultStore();
+            if ($store) {
+                return $store->getId();
+            }
         }
 
         return $scope;
