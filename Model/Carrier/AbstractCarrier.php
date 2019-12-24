@@ -137,10 +137,18 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
             return false;
         }
 
-        if ($postCode = $this->getConfigFlag('postcode')) {
+        if ($postCode = $this->getConfigData('postcode')) {
             $zipCodes = explode(';', $postCode);
             if (!in_array($request->getDestPostcode(), $zipCodes, true)) {
-                return false;
+                if (!$this->getConfigData('showmethod')) {
+                    return false;
+                }
+
+                return $this->_rateErrorFactory->create()->setData([
+                    'carrier'       => $this->_code,
+                    'carrier_title' => $this->getConfigData('title'),
+                    'error_message' => $this->getConfigData('specificerrmsg'),
+                ]);
             }
         }
 
