@@ -138,7 +138,7 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         }
 
         if ($postCode = $this->getConfigData('postcode')) {
-            $zipCodes = explode(';', $postCode);
+            $zipCodes = array_map('trim', explode(';', $postCode));
             if (!in_array($request->getDestPostcode(), $zipCodes, true)) {
                 if (!$this->getConfigData('showmethod')) {
                     return false;
@@ -153,24 +153,14 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         }
 
         $result = $this->_rateResultFactory->create();
-
-        $shippingPrice = $this->getConfigData('price');
-
-        if ($shippingPrice === false) {
-            return $result;
-        }
-
-        if ($request->getFreeShipping()) {
-            $shippingPrice = '0.00';
-        }
-
+        $price  = $request->getFreeShipping() ? 0 : (float) $this->getConfigData('price');
         $method = $this->_rateMethodFactory->create()->setData([
             'carrier'       => $this->_code,
             'carrier_title' => $this->getConfigData('title'),
             'method'        => 'flatrate',
             'method_title'  => $this->getConfigData('name'),
-            'price'         => $shippingPrice,
-            'cost'          => $shippingPrice,
+            'price'         => $price,
+            'cost'          => $price,
         ]);
 
         return $result->append($method);

@@ -26,45 +26,50 @@
             <flatrateone>
                 <model>Mageplaza\Multiflatrates\Model\Carrier\Flatrateone</model>
                 <active>0</active>
-                <title>Flatrateone</title>
-                <name>Flatrateone</name>
+                <title>Flat Rate #1</title>
+                <name>Flat Rate #1</name>
                 <price>0.00</price>
+                <showmethod>0</showmethod>
                 <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
                 <sallowspecific>0</sallowspecific>
             </flatrateone>
             <flatratetwo>
                 <model>Mageplaza\Multiflatrates\Model\Carrier\Flatratetwo</model>
                 <active>0</active>
-                <title>Flatratetwo</title>
-                <name>Flatratetwo</name>
+                <title>Flat Rate #2</title>
+                <name>Flat Rate #2</name>
                 <price>0.00</price>
+                <showmethod>0</showmethod>
                 <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
                 <sallowspecific>0</sallowspecific>
             </flatratetwo>
             <flatratethree>
                 <model>Mageplaza\Multiflatrates\Model\Carrier\Flatratethree</model>
                 <active>0</active>
-                <title>Flatratethree</title>
-                <name>Flatratethree</name>
+                <title>Flat Rate #3</title>
+                <name>Flat Rate #3</name>
                 <price>0.00</price>
+                <showmethod>0</showmethod>
                 <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
                 <sallowspecific>0</sallowspecific>
             </flatratethree>
             <flatratefour>
                 <model>Mageplaza\Multiflatrates\Model\Carrier\Flatratefour</model>
                 <active>0</active>
-                <title>Flatratefour</title>
-                <name>Flatratefour</name>
+                <title>Flat Rate #4</title>
+                <name>Flat Rate #4</name>
                 <price>0.00</price>
+                <showmethod>0</showmethod>
                 <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
                 <sallowspecific>0</sallowspecific>
             </flatratefour>
             <flatratefive>
                 <model>Mageplaza\Multiflatrates\Model\Carrier\Flatratefive</model>
                 <active>0</active>
-                <title>Flatratefive</title>
-                <name>Flatratefive</name>
+                <title>Flat Rate #5</title>
+                <name>Flat Rate #5</name>
                 <price>0.00</price>
+                <showmethod>0</showmethod>
                 <specificerrmsg>This shipping method is not available. To use this shipping method, please contact us.</specificerrmsg>
                 <sallowspecific>0</sallowspecific>
             </flatratefive>
