@@ -28,6 +28,7 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote\Address\RateRequest;
+use Magento\Quote\Model\Quote\Address\RateResult\Error;
 use Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory;
 use Magento\Quote\Model\Quote\Address\RateResult\MethodFactory;
 use Magento\Shipping\Model\Carrier\CarrierInterface;
@@ -122,15 +123,7 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         try {
             $this->setData('store', $this->getScopeId());
         } catch (LocalizedException $e) {
-            if (!$this->getConfigData('showmethod')) {
-                return false;
-            }
-
-            return $this->_rateErrorFactory->create()->setData([
-                'carrier'       => $this->_code,
-                'carrier_title' => $this->getConfigData('title'),
-                'error_message' => $e->getMessage(),
-            ]);
+            return $this->showErrorResult($e->getMessage());
         }
 
         if (!$this->getConfigFlag('active')) {
@@ -140,15 +133,7 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
         if ($postCode = $this->getConfigData('postcode')) {
             $zipCodes = array_map('trim', explode(';', $postCode));
             if (!in_array($request->getDestPostcode(), $zipCodes, true)) {
-                if (!$this->getConfigData('showmethod')) {
-                    return false;
-                }
-
-                return $this->_rateErrorFactory->create()->setData([
-                    'carrier'       => $this->_code,
-                    'carrier_title' => $this->getConfigData('title'),
-                    'error_message' => $this->getConfigData('specificerrmsg'),
-                ]);
+                return $this->showErrorResult();
             }
         }
 
@@ -174,6 +159,24 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     public function getAllowedMethods()
     {
         return ['flatrate' => $this->getConfigData('name')];
+    }
+
+    /**
+     * @param string|null $errorMsg
+     *
+     * @return bool|Error
+     */
+    private function showErrorResult($errorMsg = null)
+    {
+        if (!$this->getConfigData('showmethod')) {
+            return false;
+        }
+
+        return $this->_rateErrorFactory->create()->setData([
+            'carrier'       => $this->_code,
+            'carrier_title' => $this->getConfigData('title'),
+            'error_message' => $errorMsg ?: $this->getConfigData('specificerrmsg'),
+        ]);
     }
 
     /**
