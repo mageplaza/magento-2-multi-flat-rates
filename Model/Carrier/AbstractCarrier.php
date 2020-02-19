@@ -28,11 +28,13 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\App\State;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Quote\Model\Quote\Address\RateRequest;
+use Magento\Quote\Model\Quote\Address\RateResult\Error;
 use Magento\Quote\Model\Quote\Address\RateResult\ErrorFactory;
 use Magento\Quote\Model\Quote\Address\RateResult\MethodFactory;
 use Magento\Shipping\Model\Carrier\CarrierInterface;
 use Magento\Shipping\Model\Rate\ResultFactory;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -105,10 +107,10 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     ) {
         $this->_rateResultFactory = $rateResultFactory;
         $this->_rateMethodFactory = $rateMethodFactory;
-        $this->storeManager = $storeManager;
-        $this->request = $request;
-        $this->quote = $quote;
-        $this->state = $state;
+        $this->storeManager       = $storeManager;
+        $this->request            = $request;
+        $this->quote              = $quote;
+        $this->state              = $state;
 
         parent::__construct($scopeConfig, $rateErrorFactory, $logger, $data);
     }
@@ -118,41 +120,35 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
      */
     public function collectRates(RateRequest $request)
     {
-        $this->setStore($this->getScopeId());
+        try {
+            $this->setData('store', $this->getScopeId());
+        } catch (LocalizedException $e) {
+            return $this->showErrorResult($e->getMessage());
+        }
+
         if (!$this->getConfigFlag('active')) {
             return false;
         }
 
-        if ($postCode = $this->getConfigFlag('postcode')) {
-            $zipcodes = explode(';', $postCode);
-            if (!in_array($request->getDestPostcode(), $zipcodes)) {
-                return false;
+        if ($postCode = $this->getConfigData('postcode')) {
+            $zipCodes = array_map('trim', explode(';', $postCode));
+            if (!in_array($request->getDestPostcode(), $zipCodes, true)) {
+                return $this->showErrorResult();
             }
         }
 
         $result = $this->_rateResultFactory->create();
+        $price  = $request->getFreeShipping() ? 0 : (float) $this->getConfigData('price');
+        $method = $this->_rateMethodFactory->create()->setData([
+            'carrier'       => $this->_code,
+            'carrier_title' => $this->getConfigData('title'),
+            'method'        => 'flatrate',
+            'method_title'  => $this->getConfigData('name'),
+            'price'         => $price,
+            'cost'          => $price,
+        ]);
 
-        $shippingPrice = $this->getConfigData('price');
-        if ($shippingPrice !== false) {
-            $method = $this->_rateMethodFactory->create();
-
-            $method->setCarrier($this->_code);
-            $method->setCarrierTitle($this->getConfigData('title'));
-
-            $method->setMethod('flatrate');
-            $method->setMethodTitle($this->getConfigData('name'));
-
-            if ($request->getFreeShipping() === true || $request->getPackageQty() == $this->getFreeBoxes()) {
-                $shippingPrice = '0.00';
-            }
-
-            $method->setPrice($shippingPrice);
-            $method->setCost($shippingPrice);
-
-            $result->append($method);
-        }
-
-        return $result;
+        return $result->append($method);
     }
 
     /**
@@ -163,6 +159,24 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
     public function getAllowedMethods()
     {
         return ['flatrate' => $this->getConfigData('name')];
+    }
+
+    /**
+     * @param string|null $errorMsg
+     *
+     * @return bool|Error
+     */
+    private function showErrorResult($errorMsg = null)
+    {
+        if (!$this->getConfigData('showmethod')) {
+            return false;
+        }
+
+        return $this->_rateErrorFactory->create()->setData([
+            'carrier'       => $this->_code,
+            'carrier_title' => $this->getConfigData('title'),
+            'error_message' => $errorMsg ?: $this->getConfigData('specificerrmsg'),
+        ]);
     }
 
     /**
@@ -179,7 +193,11 @@ class AbstractCarrier extends \Magento\Shipping\Model\Carrier\AbstractCarrier im
 
         $scope = $this->request->getParam(ScopeInterface::SCOPE_STORE) ?: $storeId;
         if ($website = $this->request->getParam(ScopeInterface::SCOPE_WEBSITE)) {
-            $scope = $this->storeManager->getWebsite($website)->getDefaultStore()->getId();
+            /** @var Store $store */
+            $store = $this->storeManager->getWebsite($website)->getDefaultStore();
+            if ($store) {
+                return $store->getId();
+            }
         }
 
         return $scope;

@@ -1,3 +1,5 @@
+"Field ","Field "
+" is required."," is required."
 "Flat Rate #1","Flat Rate #1"
 Enabled,Enabled
 "Method Name","Method Name"
@@ -6,6 +8,8 @@ Price,Price
 Title,Title
 "Ship to Applicable Countries","Ship to Applicable Countries"
 "Ship to Specific Countries","Ship to Specific Countries"
+"Ship to Specific Zip/Postal Codes","Ship to Specific Zip/Postal Codes"
+"Separated by semicolons (;)","Separated by semicolons (;)"
 "Show Method if Not Applicable","Show Method if Not Applicable"
 "Displayed Error Message","Displayed Error Message"
 "Flat Rate #2","Flat Rate #2"

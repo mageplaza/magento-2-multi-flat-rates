@@ -1,5 +1,3 @@
-<?xml version="1.0" ?>
-<!--
 /**
  * Mageplaza
  *
@@ -19,7 +17,23 @@
  * @copyright   Copyright (c) Mageplaza (https://www.mageplaza.com/)
  * @license     https://www.mageplaza.com/LICENSE.txt
  */
--->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
-    <module name="Mageplaza_Multiflatrates" setup_version="1.0.0"/>
-</config>
+
+define([], function () {
+    'use strict';
+
+    return {
+        /**
+         * @return {Object}
+         */
+        getRules: function () {
+            return {
+                'country_id': {
+                    'required': true
+                },
+                'postcode': {
+                    'required': false
+                }
+            };
+        }
+    };
+});
