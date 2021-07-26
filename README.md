@@ -27,6 +27,14 @@ Native Magento 2 only supports **one flat rate shipping** which can lead to diff
 
 Run the following command in Magento 2 root folder:
 
+With Marketing Automation (recommend):
+```
+composer require mageplaza/module-multi-flat-rates mageplaza/module-smtp
+php bin/magento setup:upgrade
+php bin/magento setup:static-content:deploy
+```
+
+Without Marketing Automation:
 ```
 composer require mageplaza/module-multi-flat-rates
 php bin/magento setup:upgrade
