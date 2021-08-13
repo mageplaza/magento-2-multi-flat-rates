@@ -27,6 +27,14 @@ Native Magento 2 only supports **one flat rate shipping** which can lead to diff
 
 Run the following command in Magento 2 root folder:
 
+With Marketing Automation (recommend):
+```
+composer require mageplaza/module-multi-flat-rates mageplaza/module-smtp
+php bin/magento setup:upgrade
+php bin/magento setup:static-content:deploy
+```
+
+Without Marketing Automation:
 ```
 composer require mageplaza/module-multi-flat-rates
 php bin/magento setup:upgrade
@@ -120,5 +128,18 @@ Similarly, admins can add up to 5 shipping methods and configure them for their 
 - [Magento 2 Layered Navigation](https://github.com/mageplaza/magento-2-ajax-layered-navigation)
 - [Magento 2 security extension](https://github.com/mageplaza/magento-2-security)
 
+
+**Get more [Magento 2 extension on Marketplace](https://marketplace.magento.com/partner/Mageplaza):**
+- [Magento 2 Layered Navigation](https://marketplace.magento.com/mageplaza-layered-navigation-m2.html)
+- [Magento 2 Payment Restriction](https://marketplace.magento.com/mageplaza-module-payment-restriction.html)
+- [Magento 2 Auto Related Products](https://marketplace.magento.com/mageplaza-module-automatic-related-products.html)
+- [Magento 2 SEO](https://marketplace.magento.com/mageplaza-magento-2-seo-extension.html)
+- [Magento 2 Abandoned Cart Email](https://marketplace.magento.com/mageplaza-module-abandoned-cart-email.html)
+- [Magento 2 SMTP](https://marketplace.magento.com/mageplaza-module-smtp.html)
+- [Magento 2 Shipping Restrictions](https://marketplace.magento.com/mageplaza-module-shipping-restriction.html)
+- [Magento 2 Multiple Coupons](https://marketplace.magento.com/mageplaza-module-multiple-coupons.html)
+- [Magento 2 Order Attributes](https://marketplace.magento.com/mageplaza-module-order-attributes.html)
+- [Magento 2 Gift Card](https://marketplace.magento.com/mageplaza-module-gift-card.html)
+- [Magento 2 Affiliate Program](https://marketplace.magento.com/mageplaza-module-affiliate.html)
 
 
