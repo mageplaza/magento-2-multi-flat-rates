@@ -22,6 +22,11 @@
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
+        <multiflatrates>
+            <module>
+                <user_guide>magento/module-multi-flat-rates</user_guide>
+            </module>
+        </multiflatrates>
         <carriers>
             <flatrateone>
                 <model>Mageplaza\Multiflatrates\Model\Carrier\Flatrateone</model>
