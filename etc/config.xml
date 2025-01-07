@@ -24,7 +24,7 @@
     <default>
         <multiflatrates>
             <module>
-                <user_guide>magento/module-multi-flat-rates</user_guide>
+                <user_guide>magento/multi-flat-rates</user_guide>
             </module>
         </multiflatrates>
         <carriers>
